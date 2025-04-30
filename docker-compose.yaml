@@ -1,0 +1,103 @@
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - broker-kafka
+
+
+  kafka1:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka1
+    hostname: kafka1
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"
+    networks:
+      - broker-kafka
+
+  kafka2:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka2
+    hostname: kafka2
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka2:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9093:9093"
+    networks:
+      - broker-kafka
+
+  kafka3:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka3
+    hostname: kafka3
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka3:9094
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9094
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9094:9094"
+    networks:
+      - broker-kafka
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop:latest
+    container_name: kafdrop
+    hostname: kafdrop
+    depends_on:
+      - kafka1
+      - kafka2
+      - kafka3
+    environment:
+      KAFKA_BROKERCONNECT: kafka1:9092,kafka2:9093,kafka3:9094
+    ports:
+      - "9000:9000"
+    networks:
+      - broker-kafka
+
+  waterstream:
+    image: simplematter/waterstream-kafka:latest
+    container_name: waterstream
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: 'kafka1:9092,kafka2:9093,kafka3:9094'
+      KAFKA_PRODUCER_ACKS: all
+      KAFKA_MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION: 5
+      KAFKA_MESSAGES_DEFAULT_TOPIC: mqtt_test_topic #kafka topic
+      MQTT_PORT: 1883 
+      MQTT_WS_PORT: 8083
+      MQTT_MAX_KEEP_ALIVE_SECONDS: 3600
+      # MQTT_MAX_MESSAGE_SIZE: 8092
+      # MAX_QUEUED_INCOMING_MESSAGES: 1000
+      # MQTT_MAX_IN_FLIGHT_MESSAGES: 10
+      # MQTT_DISCONNECT_IF_NOT_ENSURED_LATEST_SESSION: false
+    ports:
+      - "1883:1883"
+      - "8083:8083"
+    networks:
+      - broker-kafka
+
+networks:
+  broker-kafka:
+    driver: bridge
