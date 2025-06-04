@@ -2,7 +2,7 @@
 #include <esp_log.h>
 
 #define MQTT_BROKER_URI "mqtt://10.5.223.37:1883"
-#define MQTT_TOPIC "mqtt-topic"
+#define MQTT_TOPIC "mqtt-lora32"
 
 esp_mqtt_client_config_t config_mqtt() {
     esp_mqtt_client_config_t mqtt_cfg = {};

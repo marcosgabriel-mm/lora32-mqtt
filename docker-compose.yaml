@@ -1,68 +1,93 @@
 services:
   zookeeper:
+    restart: always
     image: confluentinc/cp-zookeeper:latest
     container_name: zookeeper
     environment:
+      TZ: "America/Sao_Paulo"
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     ports:
       - "2181:2181"
     networks:
       - broker-kafka
+    extra_hosts:
+      - "ntp.server:200.160.7.186"
 
 
   kafka1:
+    restart: always
     image: confluentinc/cp-kafka:latest
     container_name: kafka1
     hostname: kafka1
     depends_on:
       - zookeeper
     environment:
+      TZ: "America/Sao_Paulo"
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:9092
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     ports:
       - "9092:9092"
     networks:
       - broker-kafka
+    extra_hosts:
+      - "ntp.server:200.160.7.186"
 
   kafka2:
+    restart: always
     image: confluentinc/cp-kafka:latest
     container_name: kafka2
     hostname: kafka2
     depends_on:
       - zookeeper
     environment:
+      TZ: "America/Sao_Paulo"
       KAFKA_BROKER_ID: 2
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka2:9093
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9093
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     ports:
       - "9093:9093"
     networks:
       - broker-kafka
+    extra_hosts:
+      - "ntp.server:200.160.7.186"
 
   kafka3:
+    restart: always
     image: confluentinc/cp-kafka:latest
     container_name: kafka3
     hostname: kafka3
     depends_on:
       - zookeeper
     environment:
+      TZ: "America/Sao_Paulo"
       KAFKA_BROKER_ID: 3
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka3:9094
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9094
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     ports:
       - "9094:9094"
     networks:
       - broker-kafka
+    extra_hosts:
+      - "ntp.server:200.160.7.186"
 
   kafdrop:
+    restart: always
     image: obsidiandynamics/kafdrop:latest
     container_name: kafdrop
     hostname: kafdrop
@@ -71,32 +96,42 @@ services:
       - kafka2
       - kafka3
     environment:
+      TZ: "America/Sao_Paulo"
       KAFKA_BROKERCONNECT: kafka1:9092,kafka2:9093,kafka3:9094
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     ports:
       - "9000:9000"
     networks:
       - broker-kafka
+    extra_hosts:
+      - "ntp.server:200.160.7.186"
 
   waterstream:
+    restart: always
     image: simplematter/waterstream-kafka:latest
     container_name: waterstream
     environment:
+      TZ: "America/Sao_Paulo"
       KAFKA_BOOTSTRAP_SERVERS: 'kafka1:9092,kafka2:9093,kafka3:9094'
-      KAFKA_PRODUCER_ACKS: all
-      KAFKA_MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION: 5
-      KAFKA_MESSAGES_DEFAULT_TOPIC: mqtt_test_topic #kafka topic
+      KAFKA_PRODUCER_ACKS: 'all'
+      KAFKA_LINGER_MS: 0,
+      KAFKA_BATCH_SIZE: 4096
+      KAFKA_COMPRESSION_TYPE: none
+      KAFKA_MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION: 1
+      KAFKA_MESSAGES_DEFAULT_TOPIC: mqtt_lora32 #kafka topic
       MQTT_PORT: 1883 
       MQTT_WS_PORT: 8083
       MQTT_MAX_KEEP_ALIVE_SECONDS: 3600
-      # MQTT_MAX_MESSAGE_SIZE: 8092
-      # MAX_QUEUED_INCOMING_MESSAGES: 1000
-      # MQTT_MAX_IN_FLIGHT_MESSAGES: 10
-      # MQTT_DISCONNECT_IF_NOT_ENSURED_LATEST_SESSION: false
+    volumes:
+    - /etc/localtime:/etc/localtime:ro
     ports:
       - "1883:1883"
       - "8083:8083"
     networks:
       - broker-kafka
+    extra_hosts:
+    - "ntp.server:200.160.7.186"
 
 networks:
   broker-kafka:

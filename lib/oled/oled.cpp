@@ -57,9 +57,7 @@ esp_err_t init_oled(i2c_master_bus_handle_t i2c_bus_handle, ssd1306_config_t con
     gpio_reset_pin(OLED_RESET_PIN);
     gpio_set_direction(OLED_RESET_PIN, GPIO_MODE_OUTPUT);
     gpio_set_level(OLED_RESET_PIN, 0);
-    vTaskDelay(pdMS_TO_TICKS(50));
     gpio_set_level(OLED_RESET_PIN, 1);
-    vTaskDelay(pdMS_TO_TICKS(50));
 
     ESP_ERROR_CHECK(ssd1306_init(i2c_bus_handle, &config, ssd1306_handle));
     ESP_ERROR_CHECK(ssd1306_enable_display(*ssd1306_handle));
@@ -97,6 +95,5 @@ void oled_print_message(ssd1306_handle_t ssd1306_handle, const char *message) {
                 break;
             }
         }
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
 }

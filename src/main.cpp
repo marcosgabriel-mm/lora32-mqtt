@@ -71,14 +71,11 @@ extern "C" void app_main() {
     oled_print_message(ssd1306_handle, "Connecting to MQTT broker...");
     while (1) {
      
-        cJSON *json = time_data_mock_json();
-        char *data = cJSON_Print(json);
+        const char *epoch_time_str = get_format_time();
 
-        oled_print_message(ssd1306_handle, "Sending...");
-        mqtt_publish(client, data);
-        cJSON_Delete(json);
-        
-        free(data);
-        vTaskDelay(5000 / portTICK_PERIOD_MS);
+        oled_print_message(ssd1306_handle, epoch_time_str);
+        mqtt_publish(client, epoch_time_str);
+
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
