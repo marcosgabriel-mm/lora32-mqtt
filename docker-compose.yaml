@@ -120,10 +120,18 @@ services:
       KAFKA_BATCH_SIZE: "1"
       KAFKA_COMPRESSION_TYPE: "none"
       KAFKA_MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION: "1"
-      KAFKA_MESSAGES_DEFAULT_TOPIC: mqtt_lora32 #kafka topic
+      KAFKA_MESSAGES_DEFAULT_TOPIC: "mqtt-lora32" #kafka topic
       MQTT_PORT: "1883" 
       MQTT_WS_PORT: "8083"
       MQTT_MAX_KEEP_ALIVE_SECONDS: "3600"
+      KAFKA_MQTT_MAPPINGS: |
+        rules = [
+          {
+            kafkaTopic: "mqtt-lora32"
+            kafkaKeyNull: true
+            mqttTopic: "mqtt-lora32"
+          }
+        ]
     volumes:
     - /etc/localtime:/etc/localtime:ro
     ports:
