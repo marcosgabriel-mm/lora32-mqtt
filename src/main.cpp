@@ -9,9 +9,7 @@
 #include <wifi_esp.h>
 #include <eeprom_esp.h>
 #include <wifi_credentials_page/wifi_credentials.h>
-#include <mocks_esp.h>
 #include <mqtt_esp.h>
-#include <oled.h>
 
 #include <mqtt_client.h>
 #include <time_esp.h>
@@ -20,21 +18,6 @@
 extern "C" void app_main() {
     
     ESP_LOGI("MAIN", "Starting ESP32 application...");   
-    
-    i2c_master_bus_config_t i2c_bus_config = config_i2c_bus();
-    i2c_master_bus_handle_t i2c_bus_handle = NULL;
-    ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_bus_config, &i2c_bus_handle));
-
-    i2c_device_config_t i2c_dev_conf = config_i2c_device();
-    i2c_master_dev_handle_t i2c_dev_handle = NULL;
-    ESP_ERROR_CHECK(i2c_master_bus_add_device(i2c_bus_handle, &i2c_dev_conf, &i2c_dev_handle));
-
-    ssd1306_config_t config = ssd1306_config();
-    ssd1306_handle_t ssd1306_handle = NULL;
-    ESP_ERROR_CHECK(init_oled(i2c_bus_handle, config, &ssd1306_handle));
-    
-    oled_print_message(ssd1306_handle, "Configuring Device...");
-    ESP_LOGI("MAIN", "OLED initialized successfully");
 
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
@@ -46,7 +29,6 @@ extern "C" void app_main() {
 
         while (!wifi_credentials().connected) {
             vTaskDelay(1000 / portTICK_PERIOD_MS);
-            oled_print_message(ssd1306_handle, "Waiting for the user to configure the wifi...");
         }
 
         wifi_credentials_t credentials = wifi_credentials();
@@ -55,12 +37,10 @@ extern "C" void app_main() {
         save_wifi_credentials(credentials.ssid, credentials.password);
         set_wifi_configured(0);
     
-        oled_print_message(ssd1306_handle, "Device configured successfully. Restarting...");
         esp_restart();
     }
 
     wifi_credentials_t credentials = load_wifi_credentials();
-    oled_print_message(ssd1306_handle, "Connecting to WiFi and Syncing time...");
     ESP_ERROR_CHECK(wifi_init(credentials.ssid, credentials.password));
     ESP_ERROR_CHECK(sync_time());
 
@@ -68,14 +48,11 @@ extern "C" void app_main() {
     ESP_LOGI("MAIN", "Free heap size: %d bytes | %d megabytes", free_heap_size, free_heap_size / 1024);
 
     esp_mqtt_client_handle_t client = mqtt_client();
-    oled_print_message(ssd1306_handle, "Connecting to MQTT broker...");
     while (1) {
      
         const char *epoch_time_str = get_format_time();
 
-        oled_print_message(ssd1306_handle, epoch_time_str);
         mqtt_publish(client, epoch_time_str);
-
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
