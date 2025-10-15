@@ -23,6 +23,8 @@ extern "C" void app_main() {
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     setup_eeprom();
 
+    // reset_wifi_credentials(); // Forçar reconfiguração do WiFi a cada reinício (apenas para testes)
+    
     if (!has_wifi_configured()) {
         start_wifi_ap();
         start_webserver();
@@ -47,12 +49,12 @@ extern "C" void app_main() {
     size_t free_heap_size = esp_get_free_heap_size();
     ESP_LOGI("MAIN", "Free heap size: %d bytes | %d megabytes", free_heap_size, free_heap_size / 1024);
 
-    esp_mqtt_client_handle_t client = mqtt_client();
-    while (1) {
-     
-        const char *epoch_time_str = get_format_time();
+    mqtt_task_params_t* params = (mqtt_task_params_t*) malloc(sizeof(mqtt_task_params_t));
+    params->client = mqtt_client();
 
-        mqtt_publish(client, epoch_time_str);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    xTaskCreate(mqtt_publish, "mqtt_publish", 4096, (void*) params, 5, NULL);
+
+    while(1) {
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
