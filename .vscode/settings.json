@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "*.dbclient-js": "javascript",
+        "compare": "cpp",
+        "type_traits": "cpp",
+        "cmath": "cpp",
+        "limits": "cpp",
+        "new": "cpp"
+    }
+}
