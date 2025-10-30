@@ -52,18 +52,31 @@ void slave_send_task(void *pvParameters) {
     }
 }
 
+bool test_master_connection(uint8_t *master_mac) {
+    struct_message_t test_message;
+    test_message.id = 999;
+    strcpy(test_message.message, "Connection test");
+    
+    esp_err_t result = esp_now_send(master_mac, (uint8_t *)&test_message, sizeof(test_message));
+    return (result == ESP_OK);
+}
+
 esp_err_t espnow_slave_init(uint8_t *master_mac) {
-    // Definir o mesmo canal que o mestre (você precisa descobrir qual canal o mestre usa)
-    ESP_ERROR_CHECK(esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE)); // Ajustar para o canal correto
+    ESP_ERROR_CHECK(esp_wifi_set_channel(6, WIFI_SECOND_CHAN_NONE));
+    ESP_LOGI("ESP-NOW", "WiFi channel set to 6");
+    
+    vTaskDelay(pdMS_TO_TICKS(100));
     
     if (esp_now_init() != ESP_OK) {
         ESP_LOGE("ESP-NOW", "Error initializing ESP-NOW");
         return ESP_FAIL;
     }
 
+    memcpy(stored_master_mac, master_mac, 6);
+
     esp_now_peer_info_t peerInfo = {};
     memcpy(peerInfo.peer_addr, master_mac, 6);
-    peerInfo.channel = 1;
+    peerInfo.channel = 6;
     peerInfo.encrypt = false;
 
     if (esp_now_add_peer(&peerInfo) != ESP_OK) {
@@ -73,6 +86,25 @@ esp_err_t espnow_slave_init(uint8_t *master_mac) {
 
     ESP_ERROR_CHECK(esp_now_register_send_cb(slave_send_cb));
     ESP_LOGI("ESP-NOW", "ESP-NOW slave initialized successfully");
+
+    ESP_LOGI("ESP-NOW", "Testing master connection...");
+    int max_attempts = 30;
+    int attempt = 0;
+    
+    while (attempt < max_attempts) {
+        if (test_master_connection(master_mac)) {
+            ESP_LOGI("ESP-NOW", "Master is ready! Starting communication...");
+            break;
+        }
+        
+        ESP_LOGI("ESP-NOW", "Master not ready yet, attempt %d/%d", attempt + 1, max_attempts);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        attempt++;
+    }
+    
+    if (attempt >= max_attempts) {
+        ESP_LOGW("ESP-NOW", "Master may not be ready, but starting task anyway...");
+    }
 
     BaseType_t task_result = xTaskCreate(slave_send_task, "slave_send_task", 4096, NULL, 5, NULL);
     if (task_result == pdPASS) {
