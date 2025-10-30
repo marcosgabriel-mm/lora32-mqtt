@@ -61,6 +61,30 @@ int64_t get_epoch_time_ms() {
     return ((int64_t)tv.tv_sec * 1000) + (tv.tv_usec / 1000);
 }
 
+int64_t get_epoch_time_us() {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return ((int64_t)tv.tv_sec * 1000000) + tv.tv_usec;
+}
+
+char* formart_timestamp_us(int64_t timestamp_us) {
+    static char time_buffer[TIME_BUFFER_SIZE];
+    
+    time_t seconds = timestamp_us / 1000000;
+    int microseconds = timestamp_us % 1000000;
+    int milliseconds = microseconds / 1000;
+    
+    struct tm timeinfo;
+    localtime_r(&seconds, &timeinfo);
+    
+    // Formato: YYYY-MM-DD HH:MM:SS:mmm
+    snprintf(time_buffer, sizeof(time_buffer), "%04d-%02d-%02d %02d:%02d:%02d:%03d",
+             timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
+             timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, milliseconds);
+    
+    return time_buffer;
+}
+
 char* get_format_time() {
     struct timeval tv;
     gettimeofday(&tv, NULL);

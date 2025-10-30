@@ -18,7 +18,7 @@
 #include <cJSON.h>
 #include <esp_mac.h>
 
-#define IS_MASTER false
+#define IS_MASTER true
 uint8_t master_mac[6] = {0xCC, 0xDB, 0xA7, 0xFA, 0xED, 0x1C}; // Substitua pelo MAC real do mestre
 
 extern "C" void app_main() {
@@ -65,7 +65,7 @@ extern "C" void app_main() {
         ESP_ERROR_CHECK(wifi_init(credentials.ssid, credentials.password));
         ESP_ERROR_CHECK(sync_time());
 
-        // ESP_ERROR_CHECK(mqtt_init());
+        //! ESP_ERROR_CHECK(mqtt_init());
         ESP_ERROR_CHECK(espnow_init());
         ESP_LOGI("MASTER", "Master initialized - waiting for slaves...");
     
