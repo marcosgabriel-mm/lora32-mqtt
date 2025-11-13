@@ -3,20 +3,13 @@
 
 #include <mqtt_client.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+esp_mqtt_client_handle_t mqtt_client();
+esp_err_t mqtt_init();
+void mqtt_publish_data(int slave_id, const char* message_data);
+void mqtt_subscribe(esp_mqtt_client_handle_t client);
 
 typedef struct {
     esp_mqtt_client_handle_t client;
 } mqtt_task_params_t;
-
-esp_mqtt_client_handle_t mqtt_client(void);
-void mqtt_publish(void* pvParameters);
-void mqtt_subscribe(esp_mqtt_client_handle_t client);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // MQTT_ESP_H

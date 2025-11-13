@@ -4,17 +4,13 @@
 #include <esp_err.h>
 #include <ctime>
 
-#ifdef __cplusplus
-extern "C" {
+char* get_format_time();
+char* formart_timestamp_us(int64_t timestamp_us);
+
+esp_err_t sync_time();
+time_t get_epoch_time();
+
+int64_t get_epoch_time_ms();
+int64_t get_epoch_time_us();
+
 #endif
-
-char* get_format_time(void);
-esp_err_t sync_time(void);
-time_t get_epoch_time(void);
-int64_t get_epoch_time_ms(void);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // TIME_ESP_H

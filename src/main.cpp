@@ -5,19 +5,18 @@
 #include "esp_log.h"
 #include "esp_err.h"
 #include "esp_netif.h"
-#include "ra01s.h"
 
-#include <wifi_esp.h>
-#include <esp_wifi.h>
-#include <eeprom_esp.h>
-#include <wifi_credentials_page/wifi_credentials.h>
-#include <mqtt_esp.h>
+#include "wifi_esp.h"
+#include "esp_wifi.h"
+#include "eeprom_esp.h"
+#include "wifi_credentials_page/wifi_credentials.h"
+#include "mqtt_esp.h"
 
-#include <mqtt_client.h>
-#include <lora_esp.h>
-#include <time_esp.h>
-#include <cJSON.h>
-#include <esp_mac.h>
+#include "mqtt_client.h"
+#include "lora_esp.h"
+#include "time_esp.h"
+#include "cJSON.h"
+#include "esp_mac.h"
 
 #define IS_MASTER true
 
@@ -31,6 +30,9 @@ extern "C" void app_main() {
     
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+
+    // Uncomment the following line to reset stored WiFi credentials
+    // reset_wifi_credentials();
 
     if (!has_wifi_configured() && IS_MASTER) {
         start_wifi_ap();
@@ -56,9 +58,8 @@ extern "C" void app_main() {
         ESP_ERROR_CHECK(wifi_init(credentials.ssid, credentials.password));
         ESP_ERROR_CHECK(sync_time());
 
-        //! ESP_ERROR_CHECK(mqtt_init());
-        // Implement LoRa | SX1262;
-        // On receiving data, publish via MQTT
+        ESP_ERROR_CHECK(mqtt_init());
+        ESP_ERROR_CHECK(init_lora_master());
     
     } else {
         ESP_LOGI("MAIN", "Starting as LoRa slave device...");
