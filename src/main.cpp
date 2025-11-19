@@ -18,7 +18,7 @@
 #include "cJSON.h"
 #include "esp_mac.h"
 
-#define IS_MASTER true
+#define IS_MASTER true  // Set to 'false' for slave device
 
 extern "C" void app_main() {
     
@@ -63,7 +63,7 @@ extern "C" void app_main() {
     
     } else {
         ESP_LOGI("MAIN", "Starting as LoRa slave device...");
-        
+        ESP_ERROR_CHECK(init_lora_slave());
     }
 
     size_t free_heap_size = esp_get_free_heap_size();

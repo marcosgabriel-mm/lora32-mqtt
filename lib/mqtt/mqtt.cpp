@@ -68,16 +68,14 @@ void mqtt_publish_data(int slave_id, const char* message_data) {
     }
 
     cJSON *json = cJSON_CreateObject();
+    
     cJSON *slave_id_json = cJSON_CreateNumber(slave_id);
     cJSON *message = cJSON_CreateString(message_data);
-    
-    char timestamp_str[20];
-    snprintf(timestamp_str, sizeof(timestamp_str), "%lld", (long long)get_epoch_time());
-    cJSON *timestamp = cJSON_CreateString(timestamp_str);
+    cJSON *timestamp = cJSON_CreateString(formart_timestamp_us(get_epoch_time_us()));
     
     cJSON_AddItemToObject(json, "slave_id", slave_id_json);
-    cJSON_AddItemToObject(json, "data", message);
-    cJSON_AddItemToObject(json, "timestamp", timestamp);
+    cJSON_AddItemToObject(json, "slave_time", message);
+    cJSON_AddItemToObject(json, "master_time", timestamp);
     
     char *json_string = cJSON_Print(json);
     int msg_id = esp_mqtt_client_publish(client, MQTT_TOPIC, json_string, 0, 1, 0);
